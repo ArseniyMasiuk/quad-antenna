@@ -9,7 +9,9 @@ class VehicleControll:
         print("Waiting for vehicle heartbeat...")
         self.vehicle.wait_heartbeat()
         print(f"Connected to System {self.vehicle.target_system}, Component {self.vehicle.target_component}")
-
+    
+    def __del__(self):
+        self.vehicle.close()
     def get_heading(self):
         """Retrieves current heading from VFR_HUD message."""
         msg = self.vehicle.recv_match(type='VFR_HUD', blocking=True, timeout=1.0)
@@ -30,7 +32,7 @@ class VehicleControll:
            if yaw_deg < 0:
               yaw_deg += 360
               
-        print(f"NED Pos: X={pos_msg.x:.2f}m (N), Y={pos_msg.y:.2f}m (E), Z={pos_msg.z:.2f}m (D) Heading: {yaw_deg:.1f}°", end='\r')
+           print(f"NED Pos: X={pos_msg.x:.2f}m (N), Y={pos_msg.y:.2f}m (E), Z={pos_msg.z:.2f}m (D), Heading: {yaw_deg:.1f}°", end='\r')
 
     def get_vehicle_modes(self):
         return self.vehicle.mode_mapping().keys()
