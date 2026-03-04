@@ -397,7 +397,7 @@ wheels = [
 ]
 
 [[package]]
-name = "quad-antena"
+name = "quad-antenna"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

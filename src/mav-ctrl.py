@@ -1,11 +1,11 @@
 import sys
-from vehicleControll import VehicleControll
+from vehicleControl import VehicleControl
 
 #=========================== Setting up connection ==============================
 # Use 'udpin' to allow bidirectional communication. 
 # 14550 is the standard port Mission Planner uses to forward MAVLink.
-connection_string = 'tcp:192.168.0.188:5762'
-vehicle = VehicleControll(connection_string)
+connection_string = 'udpin:192.168.88.74:14550'
+vehicle = VehicleControl(connection_string)
 
 #==================================================================================
 
