@@ -1,3 +1,9 @@
+# Getting started
+We are using UV as a package manager. To install it visit https://docs.astral.sh/uv/getting-started/installation/
+
+# How it works
+Redirect mavlink with utilities\mav-redirect.sh and then use what you need to use.
+
 We are redirecting mavlink to all needed listeners:
 
 We are listening on:
