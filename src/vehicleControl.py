@@ -16,13 +16,20 @@ class VehicleControl:
     
     def __del__(self):
         self.vehicle.close()
+
+    def get_GPS_coords(connection):
+        """Wait for a GPS message and return (lat, lon)."""
+        msg = connection.recv_match(type='GLOBAL_POSITION_INT', blocking=True)
+        # MAVLink sends lat/lon as integers (degrees * 1E7)
+        return msg.lat / 1e7, msg.lon / 1e7
+
     def get_heading(self):
         """Retrieves current heading from VFR_HUD message."""
         msg = self.vehicle.recv_match(type='VFR_HUD', blocking=True, timeout=1.0)
         if msg:
             # Use \r to update the same line in the terminal
-            print(f"Current Heading: {msg.heading}°  (Press Ctrl+C to enter new heading)", end='\r')
-
+            return msg.heading
+        
     def get_NED_data(self):
         # Get possition data
         pos_msg = self.vehicle.recv_match(type='LOCAL_POSITION_NED', blocking=True)
@@ -36,7 +43,9 @@ class VehicleControl:
            if yaw_deg < 0:
               yaw_deg += 360
               
-           print(f"NED Pos: X={pos_msg.x:.2f}m (N), Y={pos_msg.y:.2f}m (E), Z={pos_msg.z:.2f}m (D), Heading: {yaw_deg:.1f}°", end='\r')
+           return pos_msg.x, pos_msg.y, pos_msg.z, yaw_deg
+        
+        return 0, 0, 0, 0
 
     def get_vehicle_modes(self):
         return self.vehicle.mode_mapping().keys()
