@@ -1,0 +1,1 @@
+uv run mavproxy --master=udpin:localhost:5762 --out=udp:localhost:14660 --out=udp:localhost:14990 --out=udp:localhost:14770

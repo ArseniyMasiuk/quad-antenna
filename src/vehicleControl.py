@@ -17,11 +17,18 @@ class VehicleControl:
     def __del__(self):
         self.vehicle.close()
 
-    def get_GPS_coords(connection):
-        """Wait for a GPS message and return (lat, lon)."""
-        msg = connection.recv_match(type='GLOBAL_POSITION_INT', blocking=True)
-        # MAVLink sends lat/lon as integers (degrees * 1E7)
-        return msg.lat / 1e7, msg.lon / 1e7
+    def get_GPS_coords(self):
+         """Tries to get Global Position, falls back to Raw GPS.
+         Returns (lat, lon) in decimal degrees."""
+         # Wait for either message type (timeout of 2 seconds)
+         msg = self.vehicle.recv_match(type=['GLOBAL_POSITION_INT', 'GPS_RAW_INT'],
+                                      blocking=True, timeout=2)
+         
+         if msg is None:
+            return None
+         
+         # Both messages use degrees * 1E7
+         return msg.lat / 1e7, msg.lon / 1e7
 
     def get_heading(self):
         """Retrieves current heading from VFR_HUD message."""

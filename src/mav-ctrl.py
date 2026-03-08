@@ -34,7 +34,8 @@ def ConsoleUI_SetMode():
 def main():
     try:
         while True:
-            vehicle.get_NED_data()
+            x, y, z, heading = vehicle.get_NED_data()
+            print (f"x = {x}, y = {y}, z = {z}, heading ={heading}")
                        
     except KeyboardInterrupt:
         print("\n" + "-"*30)

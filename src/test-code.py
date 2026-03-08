@@ -4,16 +4,17 @@ import time
 from vehicleControl import VehicleControl
 from calculators import calculate_azimuth
 
-quad_connection_string = 'tcp:localhost:5602'
+quad_connection_string = 'tcp:localhost:5763'
 quad_vehicle = VehicleControl(quad_connection_string)
 
-plane_connection_string = 'tcp:localhost:5602'
+plane_connection_string = 'udp:192.168.0.188:14551'
 plane_vehicle = VehicleControl(plane_connection_string)
 
 # Об'єкти для зберігання останніх отриманих даних (Thread-safe)
 # Можна використовувати прості змінні з Lock або Queue
-drone_data = {"ned": None, "gps": None}
-plane_data = {"gps": None}
+drone_gps = 0, 0
+drone_ned = 0, 0, 0, 0
+plane_gps = 0, 0
 data_lock = threading.Lock()
 
 # 1. Процес Дрона (Читання NED/GPS + Відправка команд)
@@ -26,13 +27,14 @@ def drone_worker(command_queue):
         new_gps = quad_vehicle.get_GPS_coords()
         
         with data_lock:
-            drone_data["ned"] = new_ned
-            drone_data["gps"] = new_gps
+            drone_ned = new_ned
+            if new_gps is not None:
+                drone_gps = new_gps
         
         # ТУТ: Якщо в черзі є нова команда від основного процесу — відправляємо
         if not command_queue.empty():
             new_heading = command_queue.get()
-            x, y , z, old_heading  = drone_data["ned"]
+            x, y , z, old_heading  = drone_ned
             quad_vehicle.set_local_target(x, y, z, new_heading)
         
 # 2. Процес Літака (Тільки GPS)
@@ -42,15 +44,16 @@ def plane_worker():
         new_gps = quad_vehicle.get_GPS_coords()
         
         with data_lock:
-            plane_data["gps"] = new_gps
+            if new_gps is not None:
+                plane_gps = new_gps
 
 # 3. Основний процес (Обчислення та керування)
 def main_logic(command_queue):
     while True:
         with data_lock:
-            lat1, lon1 = drone_data["gps"]
-            lat2, lon2 = plane_data["gps"]
-            d_ned = drone_data["ned"]
+            lat1, lon1 = drone_gps
+            lat2, lon2 = drone_gps
+            x, y , z, d_ned = drone_ned
 
             new_heading = calculate_azimuth(lat1, lon1, lat2, lon2)
             
@@ -62,7 +65,7 @@ def main_logic(command_queue):
 def start_system():
     command_queue = queue.Queue()
 
-    t1 = threading.Thread(target=drone_worker, daemon=True)
+    t1 = threading.Thread(target=drone_worker,args=(command_queue,), daemon=True)
     t2 = threading.Thread(target=plane_worker, daemon=True)
     t3 = threading.Thread(target=main_logic, args=(command_queue,), daemon=True)
 
