@@ -9,6 +9,8 @@ dependencies = [
     "future>=1.0.0",
     "lxml==6.0.2",
     "mavproxy==1.8.74",
+    "mavsdk>=3.15.3",
+    "nicegui>=3.8.0",
     "numpy==2.2.6",
     "pymavlink==2.4.49",
     "pynmeagps==1.1.2",
