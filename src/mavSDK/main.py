@@ -1,8 +1,7 @@
 import asyncio
+from dataclasses import fields
 from nicegui import ui
-from Vehicle import Vehicle
-
-
+from Vehicle import Vehicle, TelemetryHealth
 
 def log(message):
      ui.notify(message)
@@ -49,6 +48,18 @@ class GUIApp:
 
              self.new_heading = ui.input(label='New heading').classes('flex-grow')
              self.button_set_heading = ui.button('Set new heading', on_click=self.button_update_heading).props('elevated')
+        
+        with ui.expansion('Health checks', icon='monitor_heart').classes('w-full border rounded'):
+            with ui.column().classes('p-2 gap-1 w-full'):
+                for field in fields(TelemetryHealth):
+                    name = field.name
+                    label = name.replace('is_', '').replace('_ok', '').replace('_', ' ').capitalize()
+            
+                    with ui.row().classes('items-center justify-between w-full'):
+                        ui.label(label).classes('text-sm')
+                
+                        ui.icon('check_circle').classes('text-green-500').bind_visibility_from(self.vehicle.telemetry_health, name)
+                        ui.icon('cancel').classes('text-red-500').bind_visibility_from(self.vehicle.telemetry_health, name, value=False)
 
     def update_heading_badge(self):
             self.heading_badge.text = f'Heading: {int(self.vehicle.heading)}'
